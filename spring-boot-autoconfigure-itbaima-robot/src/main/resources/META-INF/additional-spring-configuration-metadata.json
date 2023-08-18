@@ -1,0 +1,51 @@
+{
+  "properties": [
+    {
+      "name": "itbaima.robot.login-type",
+      "type": "java.lang.String",
+      "defaultValue": "qr_code",
+      "description": "登录类型，密码登录以及控制台打印二维码扫描登录，默认为二维码扫描登录.",
+      "values": [
+        {
+          "value": "password",
+          "description": "使用密码登录."
+        }, {
+          "value": "qr_code",
+          "description": "扫描控制台二维码登录."
+        }
+      ]
+    }, {
+      "name": "itbaima.robot.username",
+      "type": "java.lang.Long",
+      "description": "要登录的QQ账号."
+    }, {
+      "name": "itbaima.robot.password",
+      "type": "java.lang.String",
+      "description": "如果选择使用密码登录，请填写登录密码."
+    }, {
+      "name": "itbaima.robot.data.work-dir",
+      "type": "java.lang.String",
+      "description": "默认数据存储根目录."
+    }, {
+      "name": "itbaima.robot.data.cache-dir",
+      "type": "java.lang.String",
+      "description": "默认信息缓存目录，相对于根目录."
+    }, {
+      "name": "itbaima.robot.data.save-device-id",
+      "type": "java.lang.Boolean",
+      "description": "是否持久化设备信息，方便迁移."
+    }, {
+      "name": "itbaima.robot.signer.version",
+      "type": "java.lang.String",
+      "description": "签名服务器提供的版本."
+    }, {
+      "name": "itbaima.robot.signer.type",
+      "type": "net.itbaima.robot.autoconfigure.util.SignerType",
+      "description": "签名服务器类型."
+    }, {
+      "name": "itbaima.robot.signer.url",
+      "type": "java.lang.String",
+      "description": "签名服务器地址."
+    }
+  ]
+}
