@@ -1,6 +1,10 @@
 package net.itbaima.robot.autoconfigure;
 
+import jakarta.annotation.Resource;
 import net.itbaima.robot.autoconfigure.RobotProperties.DataConfig;
+import net.itbaima.robot.event.RobotEventPostProcessor;
+import net.itbaima.robot.service.RobotService;
+import net.itbaima.robot.service.impl.RobotServiceImpl;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
 import net.mamoe.mirai.IMirai;
@@ -8,11 +12,11 @@ import net.mamoe.mirai.Mirai;
 import net.mamoe.mirai.auth.BotAuthorization;
 import net.mamoe.mirai.utils.BotConfiguration;
 import net.mamoe.mirai.utils.LoggerAdapters;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import xyz.cssxsh.mirai.tool.Cola;
 import xyz.cssxsh.mirai.tool.FixProtocolVersion;
@@ -20,7 +24,8 @@ import xyz.cssxsh.mirai.tool.KFCFactory;
 
 import java.io.File;
 
-@Import({})
+@Configuration
+@Import(RobotEventPostProcessor.class)
 @EnableConfigurationProperties({RobotProperties.class})
 public class RobotAutoConfiguration {
 
@@ -28,13 +33,18 @@ public class RobotAutoConfiguration {
         LoggerAdapters.useLog4j2();
     }
 
-    @Autowired
+    @Resource
     RobotProperties properties;
 
     @Bean
     @ConditionalOnMissingBean
     public IMirai mirai(){
         return Mirai.getInstance();
+    }
+
+    @Bean
+    public RobotService robotService(){
+        return new RobotServiceImpl();
     }
 
     @Bean

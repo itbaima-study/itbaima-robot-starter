@@ -14,14 +14,12 @@ import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 
 /**
  * 处理所有机器人事件监听器的后置处理器
  */
-@Component
 public class RobotEventPostProcessor implements BeanPostProcessor, BeanFactoryAware {
 
     @Resource

@@ -4,11 +4,13 @@ import jakarta.annotation.Resource;
 import net.itbaima.robot.service.RobotService;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.IMirai;
-import net.mamoe.mirai.contact.*;
+import net.mamoe.mirai.contact.ContactList;
+import net.mamoe.mirai.contact.Friend;
+import net.mamoe.mirai.contact.Group;
+import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.data.UserProfile;
 import net.mamoe.mirai.message.MessageReceipt;
 import net.mamoe.mirai.message.data.Message;
-import org.springframework.stereotype.Service;
 
 import java.util.function.Consumer;
 
@@ -18,7 +20,6 @@ import java.util.function.Consumer;
  * @since 1.0.0
  * @author Ketuer
  */
-@Service
 public class RobotServiceImpl implements RobotService {
 
     @Resource
