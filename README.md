@@ -41,6 +41,8 @@
 
 在开始之前，请根据我们的指引完成对机器人相关的配置：https://github.com/itbaima-study/itbaima-robot-starter/wiki 当一切配置无误时，就可以开始体验了。
 
+我们还准备了B站视频教程：https://www.bilibili.com/video/BV1Rp4y1J7kh/
+
 ### 使用监听器
 
 你可以使用注解快速编写监听器，监听即将到来的事件：
