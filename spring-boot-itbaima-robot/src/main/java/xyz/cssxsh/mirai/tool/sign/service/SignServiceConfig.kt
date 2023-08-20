@@ -1,11 +1,13 @@
-package xyz.cssxsh.mirai.tool
+package xyz.cssxsh.mirai.tool.sign.service
 
-import kotlinx.serialization.*
-import kotlinx.serialization.json.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
-data class Cola(
+data class SignServiceConfig(
     @SerialName("base_url")
     val base: String,
     @SerialName("type")

@@ -2,13 +2,22 @@ package xyz.cssxsh.mirai.tool
 
 import kotlinx.serialization.json.*
 import net.mamoe.mirai.internal.utils.*
-import net.mamoe.mirai.utils.*
-import java.io.*
-import java.net.*
-import java.time.*
+import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.toUHexString
+import xyz.cssxsh.mirai.tool.sign.service.SignServiceFactory
+import java.io.File
+import java.net.URL
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneId
 
+/**
+ * 原名: FixProtocolVersion.
+ */
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-object FixProtocolVersion {
+object ProtocolVersionFixer {
 
     private val clazz = MiraiProtocolInternal::class.java
 
@@ -246,21 +255,6 @@ object FixProtocolVersion {
     }
 
     /**
-     * 从 [RomiChan/protocol-versions](https://github.com/RomiChan/protocol-versions) 同步最新协议
-     *
-     * @since 1.6.0
-     */
-    @Deprecated(
-        message = "sync 作用不明确，故废弃",
-        ReplaceWith(
-            """fetch(protocol = protocol, version = "latest")""",
-            "xyz.cssxsh.mirai.tool.FixProtocolVersion.fetch"
-        )
-    )
-    @JvmStatic
-    fun sync(protocol: BotConfiguration.MiraiProtocol): Unit = fetch(protocol = protocol, version = "latest")
-
-    /**
      * 从 [RomiChan/protocol-versions](https://github.com/RomiChan/protocol-versions) 获取指定版本协议
      *
      * @since 1.9.6
@@ -272,14 +266,14 @@ object FixProtocolVersion {
         } else {
             val (file, url) = when (protocol) {
                 BotConfiguration.MiraiProtocol.ANDROID_PHONE -> {
-                    File(KFCFactory.workDir + "android_phone.json") to
+                    File(SignServiceFactory.workDir + "android_phone.json") to
                             when (version) {
                                 "", "latest" -> URL("https://raw.githubusercontent.com/RomiChan/protocol-versions/master/android_phone.json")
                                 else -> URL("https://raw.githubusercontent.com/RomiChan/protocol-versions/master/android_phone/${version}.json")
                             }
                 }
                 BotConfiguration.MiraiProtocol.ANDROID_PAD -> {
-                    File(KFCFactory.workDir + "android_pad.json") to
+                    File(SignServiceFactory.workDir + "android_pad.json") to
                             when (version) {
                                 "", "latest" -> URL("https://raw.githubusercontent.com/RomiChan/protocol-versions/master/android_pad.json")
                                 else -> URL("https://raw.githubusercontent.com/RomiChan/protocol-versions/master/android_pad/${version}.json")
@@ -332,7 +326,7 @@ object FixProtocolVersion {
      */
     @JvmStatic
     private fun existsLocalFile(protocol: BotConfiguration.MiraiProtocol) : Boolean{
-        return File(KFCFactory.workDir + "${protocol.name.lowercase()}.json").exists()
+        return File(SignServiceFactory.workDir + "${protocol.name.lowercase()}.json").exists()
     }
 
     /**
@@ -342,7 +336,7 @@ object FixProtocolVersion {
      */
     @JvmStatic
     private fun load(protocol: BotConfiguration.MiraiProtocol) {
-        val file = File(KFCFactory.workDir + "${protocol.name.lowercase()}.json")
+        val file = File(SignServiceFactory.workDir + "${protocol.name.lowercase()}.json")
         val json: JsonObject = Json.parseToJsonElement(file.readText()).jsonObject
         store(protocol, json)
     }

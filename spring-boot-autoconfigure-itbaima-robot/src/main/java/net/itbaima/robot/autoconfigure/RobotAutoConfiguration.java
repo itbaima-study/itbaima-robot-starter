@@ -18,9 +18,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import xyz.cssxsh.mirai.tool.Cola;
-import xyz.cssxsh.mirai.tool.FixProtocolVersion;
-import xyz.cssxsh.mirai.tool.KFCFactory;
+import xyz.cssxsh.mirai.tool.sign.service.SignServiceConfig;
+import xyz.cssxsh.mirai.tool.ProtocolVersionFixer;
+import xyz.cssxsh.mirai.tool.sign.service.SignServiceFactory;
 
 import java.io.File;
 
@@ -87,15 +87,15 @@ public class RobotAutoConfiguration {
 
     private void fixProtocolVersion(String path){
         RobotProperties.SignerConfig signer = properties.getSigner();
-        KFCFactory.initConfiguration(path, new Cola(
+        SignServiceFactory.initConfiguration(path, new SignServiceConfig(
                 signer.getUrl(),
                 signer.getType().toName(),
                 signer.getKey(),
                 signer.getServerIdentityKey(),
                 signer.getAuthorizationKey()
         ));
-        KFCFactory.install();
-        FixProtocolVersion.fetch(properties.getProtocol(), signer.getVersion());
+        SignServiceFactory.install();
+        ProtocolVersionFixer.fetch(properties.getProtocol(), signer.getVersion());
     }
 
     private void configureRobot(BotConfiguration configuration) {

@@ -1,30 +1,39 @@
-package xyz.cssxsh.mirai.tool
+package xyz.cssxsh.mirai.tool.sign.service
 
-import kotlinx.coroutines.*
-import net.mamoe.mirai.internal.spi.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.job
+import net.mamoe.mirai.internal.spi.EncryptService
+import net.mamoe.mirai.internal.spi.EncryptServiceContext
 import net.mamoe.mirai.internal.utils.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.Services
+import xyz.cssxsh.mirai.tool.sign.service.impl.MagicSignerGuide
+import xyz.cssxsh.mirai.tool.sign.service.impl.UnidbgFetchQsign
 import java.net.ConnectException
 import java.net.URL
 
-class KFCFactory : EncryptService.Factory {
+/**
+ * 原名: KFCFactory
+ */
+class SignServiceFactory : EncryptService.Factory {
 
     companion object {
         @JvmStatic
-        internal var cola: Cola? = null;
+        internal var signServiceConfig: SignServiceConfig? = null
 
         @JvmStatic
         internal var workDir: String = ""
 
         @JvmStatic
-        internal val logger: MiraiLogger = MiraiLogger.Factory.create(KFCFactory::class)
+        internal val logger: MiraiLogger = MiraiLogger.Factory.create(SignServiceFactory::class)
 
         @JvmStatic
         fun install() {
             Services.register(
                 EncryptService.Factory::class.qualifiedName!!,
-                KFCFactory::class.qualifiedName!!,
-                ::KFCFactory
+                SignServiceFactory::class.qualifiedName!!,
+                ::SignServiceFactory
             )
         }
 
@@ -32,9 +41,9 @@ class KFCFactory : EncryptService.Factory {
         internal val created: MutableSet<Long> = java.util.concurrent.ConcurrentHashMap.newKeySet()
 
         @JvmStatic
-        fun initConfiguration(path: String, config: Cola) {
+        fun initConfiguration(path: String, config: SignServiceConfig) {
             workDir = "$path/"
-            cola = config
+            signServiceConfig = config
         }
     }
 
@@ -54,12 +63,12 @@ class KFCFactory : EncryptService.Factory {
             BotConfiguration.MiraiProtocol.ANDROID_PHONE, BotConfiguration.MiraiProtocol.ANDROID_PAD -> {
                 @Suppress("INVISIBLE_MEMBER")
                 val version = MiraiProtocolInternal[protocol].ver
-                val server = cola!!
-                when (val type = server.type.ifEmpty { throw IllegalArgumentException("need server type") }) {
+                val config = signServiceConfig!!
+                when (val type = config.type.ifEmpty { throw IllegalArgumentException("need server type") }) {
                     "fuqiuluo/unidbg-fetch-qsign", "fuqiuluo", "unidbg-fetch-qsign" -> {
                         try {
-                            val about = URL(server.base).readText()
-                            logger.info("unidbg-fetch-qsign by ${server.base} about " + about.replace("\n", "").replace(" ", ""))
+                            val about = URL(config.base).readText()
+                            logger.info("unidbg-fetch-qsign by ${config.base} about " + about.replace("\n", "").replace(" ", ""))
                             when {
                                 "version" !in about -> {
                                     // 低于等于 1.1.3 的的版本 requestToken 不工作
@@ -67,57 +76,53 @@ class KFCFactory : EncryptService.Factory {
                                     logger.warning("请更新 unidbg-fetch-qsign")
                                 }
                                 version !in about -> {
-                                    throw IllegalStateException("unidbg-fetch-qsign by ${server.base} 的版本与 ${protocol}(${version}) 似乎不匹配")
+                                    throw IllegalStateException("unidbg-fetch-qsign by ${config.base} 的版本与 ${protocol}(${version}) 似乎不匹配")
                                 }
                             }
                         } catch (cause: ConnectException) {
-                            throw RuntimeException("请检查 unidbg-fetch-qsign by ${server.base} 的可用性", cause)
+                            throw RuntimeException("请检查 unidbg-fetch-qsign by ${config.base} 的可用性", cause)
                         } catch (cause: java.io.FileNotFoundException) {
-                            throw RuntimeException("请检查 unidbg-fetch-qsign by ${server.base} 的可用性", cause)
+                            throw RuntimeException("请检查 unidbg-fetch-qsign by ${config.base} 的可用性", cause)
                         }
                         UnidbgFetchQsign(
-                            server = server.base,
-                            key = server.key,
+                            server = config.base,
+                            key = config.key,
                             coroutineContext = serviceSubScope.coroutineContext
                         )
                     }
                     "kiliokuara/magic-signer-guide", "kiliokuara", "magic-signer-guide", "vivo50" -> {
                         try {
-                            val about = URL(server.base).readText()
-                            logger.info("magic-signer-guide by ${server.base} about \n" + about)
+                            val about = URL(config.base).readText()
+                            logger.info("magic-signer-guide by ${config.base} about \n" + about)
                             when {
                                 "void" == about.trim() -> {
                                     logger.warning("请更新 magic-signer-guide 的 docker 镜像")
                                 }
                                 version !in about -> {
-                                    throw IllegalStateException("magic-signer-guide by ${server.base} 与 ${protocol}(${version}) 似乎不匹配")
+                                    throw IllegalStateException("magic-signer-guide by ${config.base} 与 ${protocol}(${version}) 似乎不匹配")
                                 }
                             }
                         } catch (cause: ConnectException) {
-                            throw RuntimeException("请检查 magic-signer-guide by ${server.base} 的可用性", cause)
+                            throw RuntimeException("请检查 magic-signer-guide by ${config.base} 的可用性", cause)
                         } catch (cause: java.io.FileNotFoundException) {
-                            throw RuntimeException("请检查 unidbg-fetch-qsign by ${server.base} 的可用性", cause)
+                            throw RuntimeException("请检查 unidbg-fetch-qsign by ${config.base} 的可用性", cause)
                         }
-                        ViVo50(
-                            server = server.base,
-                            serverIdentityKey = server.serverIdentityKey,
-                            authorizationKey = server.authorizationKey,
+                        MagicSignerGuide(
+                            server = config.base,
+                            serverIdentityKey = config.serverIdentityKey,
+                            authorizationKey = config.authorizationKey,
                             coroutineContext = serviceSubScope.coroutineContext
                         )
                     }
-                    "TLV544Provider" -> TLV544Provider()
                     else -> throw UnsupportedOperationException(type)
                 }
             }
-            BotConfiguration.MiraiProtocol.ANDROID_WATCH -> throw UnsupportedOperationException(protocol.name)
-            BotConfiguration.MiraiProtocol.IPAD, BotConfiguration.MiraiProtocol.MACOS -> {
-                logger.error("$protocol 尚不支持签名服务，大概率登录失败")
-                TLV544Provider()
-            }
+
+            else -> throw UnsupportedOperationException(protocol.name)
         }
     }
 
     override fun toString(): String {
-        return "KFCFactory(config=${cola})"
+        return "EncryptServiceFactory(config=$signServiceConfig)"
     }
 }

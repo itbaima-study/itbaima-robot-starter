@@ -1,19 +1,40 @@
-package xyz.cssxsh.mirai.tool
+package xyz.cssxsh.mirai.tool.sign.service.impl
 
 import kotlinx.coroutines.*
-import kotlinx.serialization.*
-import kotlinx.serialization.builtins.*
-import kotlinx.serialization.json.*
-import net.mamoe.mirai.*
-import net.mamoe.mirai.event.*
-import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.internal.spi.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNames
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.BotOfflineEvent
+import net.mamoe.mirai.internal.spi.EncryptService
+import net.mamoe.mirai.internal.spi.EncryptServiceContext
 import net.mamoe.mirai.utils.*
-import org.asynchttpclient.*
-import kotlin.coroutines.*
+import org.asynchttpclient.DefaultAsyncHttpClientConfig
+import org.asynchttpclient.Dsl
+import kotlin.coroutines.CoroutineContext
 
+/**
+ * fuqiuluo/unidbg-fetch-qsign 的加密服务实现.
+ */
 class UnidbgFetchQsign(private val server: String, private val key: String, coroutineContext: CoroutineContext) :
     EncryptService, CoroutineScope {
+
+    companion object {
+        @JvmStatic
+        internal val logger: MiraiLogger = MiraiLogger.Factory.create(UnidbgFetchQsign::class)
+
+        @JvmStatic
+        val REQUEST_TOKEN_INTERVAL: String = "xyz.cssxsh.mirai.tool.sign.service.impl.UnidbgFetchQsign.token.interval"
+
+        @JvmStatic
+        internal val CMD_WHITE_LIST = UnidbgFetchQsign::class.java.getResource("/cmd.txt")!!.readText().lines()
+    }
 
     override val coroutineContext: CoroutineContext =
         coroutineContext + SupervisorJob(coroutineContext[Job]) + CoroutineExceptionHandler { context, exception ->
@@ -242,19 +263,10 @@ class UnidbgFetchQsign(private val server: String, private val key: String, coro
     }
 
     override fun toString(): String {
-        return "UnidbgFetchQsign(server=${server}, uin=${token})"
+        return "UnidbgFetchQsignService(server=${server}, uin=${token})"
     }
 
-    companion object {
-        @JvmStatic
-        internal val CMD_WHITE_LIST = UnidbgFetchQsign::class.java.getResource("/cmd.txt")!!.readText().lines()
 
-        @JvmStatic
-        internal val logger: MiraiLogger = MiraiLogger.Factory.create(UnidbgFetchQsign::class)
-
-        @JvmStatic
-        val REQUEST_TOKEN_INTERVAL: String = "xyz.cssxsh.mirai.tool.UnidbgFetchQsign.token.interval"
-    }
 }
 
 @Serializable

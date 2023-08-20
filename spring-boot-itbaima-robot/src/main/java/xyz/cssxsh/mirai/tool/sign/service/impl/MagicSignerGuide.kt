@@ -1,27 +1,45 @@
-package xyz.cssxsh.mirai.tool
+package xyz.cssxsh.mirai.tool.sign.service.impl
 
 import kotlinx.coroutines.*
-import kotlinx.serialization.*
-import kotlinx.serialization.builtins.*
+import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.*
-import net.mamoe.mirai.*
-import net.mamoe.mirai.event.*
-import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.internal.spi.*
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.BotOfflineEvent
+import net.mamoe.mirai.internal.spi.EncryptService
+import net.mamoe.mirai.internal.spi.EncryptServiceContext
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.utils.*
-import org.asynchttpclient.*
-import org.asynchttpclient.ws.*
-import java.security.*
-import java.security.spec.*
+import org.asynchttpclient.DefaultAsyncHttpClientConfig
+import org.asynchttpclient.Dsl
+import org.asynchttpclient.ListenableFuture
+import org.asynchttpclient.Response
+import org.asynchttpclient.ws.WebSocket
+import org.asynchttpclient.ws.WebSocketListener
+import org.asynchttpclient.ws.WebSocketUpgradeHandler
+import java.security.KeyFactory
+import java.security.KeyPair
+import java.security.KeyPairGenerator
+import java.security.Signature
+import java.security.spec.X509EncodedKeySpec
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
-import javax.crypto.*
-import javax.crypto.spec.*
-import kotlin.coroutines.*
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
+import kotlin.coroutines.CoroutineContext
 
-class ViVo50(
+/**
+ * kiliokuara/magic-signer-guide 的加密服务实现.
+ * 原名: ViVo50.
+ */
+class MagicSignerGuide(
     private val server: String,
     private val serverIdentityKey: String,
     private val authorizationKey: String,
@@ -30,16 +48,16 @@ class ViVo50(
 
     companion object {
         @JvmStatic
-        internal val logger: MiraiLogger = MiraiLogger.Factory.create(ViVo50::class)
+        internal val logger: MiraiLogger = MiraiLogger.Factory.create(MagicSignerGuide::class)
 
         @JvmStatic
-        val SESSION_EXCEPT_TIMEOUT: String = "xyz.cssxsh.mirai.tool.ViVo50.Session.timeout"
+        val SESSION_EXCEPT_TIMEOUT: String = "xyz.cssxsh.mirai.tool.sign.service.impl.MagicSignerGuide.Session.timeout"
     }
 
     override val coroutineContext: CoroutineContext =
         coroutineContext + SupervisorJob(coroutineContext[Job]) + CoroutineExceptionHandler { context, exception ->
             when (exception) {
-                is kotlinx.coroutines.CancellationException -> {
+                is CancellationException -> {
                     // ...
                 }
                 else -> {
@@ -250,7 +268,7 @@ class ViVo50(
     }
 
     override fun toString(): String {
-        return "ViVo50(server=${server}, sessions=${sessions.keys})"
+        return "MagicSignerGuideService(server=${server}, sessions=${sessions.keys})"
     }
 
     private inner class Session(val bot: Long, val token: String, val channel: EncryptService.ChannelProxy) :
