@@ -97,7 +97,7 @@ public class HandlerResolver {
         Parameter[] parameters = method.getParameters();
         for (int i = 1; i < parameters.length; i++) {
             Object object = factory.getBean(parameters[i].getType());
-            paramObjs[i - 1] = object;
+            paramObjs[i] = object;
         }
         try {
             method.invoke(bean, paramObjs);

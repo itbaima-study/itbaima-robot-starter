@@ -32,6 +32,6 @@ public record EventHandler(RobotListenerHandler annotation, Consumer<Event> cons
     }
 
     public int compareOrder(EventHandler another){
-        return this.annotation.order() - another.annotation.order();
+        return Integer.compare(this.annotation.order(), another.annotation.order());
     }
 }
